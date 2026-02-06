@@ -1,0 +1,6 @@
+{
+  "name": "Claude Web",
+  "tagline": "Claude Code in a browser window.",
+  "defaultCwd": "D:\\projects\\",
+  "defaultModel": "claude-sonnet-4-5-20250929"
+}

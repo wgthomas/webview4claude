@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Web — Cybertron</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Cybertron Design System -->
+    <link rel="stylesheet" href="cybertron.css">
+    <link rel="stylesheet" href="app.css">
+
+    <!-- Markdown + Syntax Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.1/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <!-- Cybertron Components -->
+    <script src="cybertron-components.js"></script>
+</head>
+<body>
+    <div class="cw-layout">
+        <!-- Sidebar -->
+        <aside class="cw-sidebar" id="sidebar">
+            <div class="cw-sidebar-header">
+                <h1><span class="cb-logo">//</span> Claude Web</h1>
+                <button class="cb-btn cb-btn-primary cw-new-session-btn" id="btn-new-session">+ New</button>
+            </div>
+
+            <div class="cw-session-list" id="session-list">
+                <!-- Sessions populated by JS -->
+            </div>
+
+            <div class="cw-sidebar-footer">
+                <div class="cw-cost-summary" id="cost-summary">
+                    <span class="cb-dim">Session: $0.00</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="cw-main">
+            <!-- Header Bar -->
+            <header class="cw-header" id="chat-header">
+                <div class="cw-header-left">
+                    <button class="cb-btn cw-sidebar-toggle" id="btn-toggle-sidebar">&#9776;</button>
+                    <span class="cw-session-name" id="header-session-name">No session selected</span>
+                </div>
+                <div class="cw-header-right">
+                    <select class="cb-select cw-model-select" id="model-select">
+                        <option value="claude-sonnet-4-5-20250929">Sonnet 4.5</option>
+                        <option value="claude-opus-4-6">Opus 4.6</option>
+                        <option value="claude-haiku-4-5-20251001">Haiku 4.5</option>
+                    </select>
+                    <span class="cb-dim cw-cwd" id="header-cwd" title="Working directory"></span>
+                    <div class="cb-connection">
+                        <div class="cb-dot cb-dot-sm cb-dot-muted" id="conn-dot"></div>
+                        <span class="cb-small" id="conn-text">Disconnected</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Chat Area -->
+            <div class="cw-chat" id="chat-area">
+                <div class="cw-empty-state" id="empty-state">
+                    <div class="cw-empty-icon">&#9889;</div>
+                    <h3>Claude Web</h3>
+                    <p class="cb-dim">Create or select a session to begin.</p>
+                    <p class="cb-dim cb-small">Claude Code runs server-side with full tool access.<br>You just see the results stream in real time.</p>
+                </div>
+                <div class="cw-messages" id="messages">
+                    <!-- Messages populated by JS -->
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="cw-input-area" id="input-area">
+                <div class="cw-input-row">
+                    <textarea
+                        class="cb-input cw-prompt-input"
+                        id="prompt-input"
+                        placeholder="Send a message... (Ctrl+Enter to send)"
+                        rows="3"
+                        disabled
+                    ></textarea>
+                    <div class="cw-input-actions">
+                        <button class="cb-btn cb-btn-primary cw-send-btn" id="btn-send" disabled>Send</button>
+                        <button class="cb-btn cw-stop-btn" id="btn-stop" style="display:none;">Stop</button>
+                    </div>
+                </div>
+                <div class="cw-input-meta">
+                    <span class="cb-dim cb-tiny" id="input-status"></span>
+                    <span class="cb-dim cb-tiny">Ctrl+Enter to send &middot; Esc to stop</span>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- New Session Modal -->
+    <div class="cw-modal-overlay" id="modal-overlay" style="display:none;">
+        <div class="cw-modal cb-card">
+            <h2>New Session</h2>
+            <div class="cw-form-group">
+                <label class="cb-small cb-dim">Name</label>
+                <input class="cb-input" id="modal-name" placeholder="My Project" value="">
+            </div>
+            <div class="cw-form-group">
+                <label class="cb-small cb-dim">Working Directory</label>
+                <input class="cb-input" id="modal-cwd" placeholder="D:\projects\my-project" value="">
+            </div>
+            <div class="cw-form-group">
+                <label class="cb-small cb-dim">Model</label>
+                <select class="cb-select" id="modal-model" style="width:100%;">
+                    <option value="claude-sonnet-4-5-20250929">Sonnet 4.5</option>
+                    <option value="claude-opus-4-6">Opus 4.6</option>
+                    <option value="claude-haiku-4-5-20251001">Haiku 4.5</option>
+                </select>
+            </div>
+            <div class="cw-modal-actions">
+                <button class="cb-btn" id="modal-cancel">Cancel</button>
+                <button class="cb-btn cb-btn-primary" id="modal-create">Create Session</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="chat-renderer.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
