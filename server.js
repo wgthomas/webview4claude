@@ -10,6 +10,7 @@ import { dirname, join } from 'path';
 import store from './lib/session-store.js';
 import sse from './lib/sse-manager.js';
 import runner from './lib/agent-runner.js';
+import commands from './lib/slash-commands.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -61,6 +62,13 @@ app.get('/api/sessions/:id/history', (req, res) => {
   res.json(store.getHistory(req.params.id));
 });
 
+// ─── Slash Commands ───────────────────────────────────────────────
+
+app.get('/api/commands', (req, res) => {
+  const cwd = req.query.cwd || null;
+  res.json(commands.list(cwd));
+});
+
 // ─── Chat ─────────────────────────────────────────────────────────
 
 app.post('/api/chat', (req, res) => {
@@ -75,12 +83,29 @@ app.post('/api/chat', (req, res) => {
     return res.status(409).json({ error: 'Session is already running' });
   }
 
+  // Expand slash commands
+  let finalPrompt = prompt;
+  const parsed = commands.parse(prompt);
+  if (parsed) {
+    const resolved = commands.resolve(parsed.name, parsed.args, session.cwd);
+    if (resolved) {
+      finalPrompt = resolved.prompt;
+      // Notify client that command was expanded
+      sse.broadcast(sessionId, 'command_expanded', {
+        command: parsed.name,
+        description: resolved.description
+      });
+    } else {
+      return res.status(400).json({ error: `Unknown command: /${parsed.name}` });
+    }
+  }
+
   // Fire and forget — results stream via SSE
-  runner.run(sessionId, prompt).catch(err => {
+  runner.run(sessionId, finalPrompt).catch(err => {
     console.error('[Server] Runner error:', err.message);
   });
 
-  res.status(202).json({ ok: true, sessionId });
+  res.status(202).json({ ok: true, sessionId, expanded: !!parsed });
 });
 
 app.post('/api/chat/:id/stop', (req, res) => {
@@ -118,7 +143,9 @@ app.get('/api/chat/:id/sse', (req, res) => {
 
 // ─── Start ────────────────────────────────────────────────────────
 
-app.listen(PORT, () => {
-  console.log(`Claude Web running at http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Claude Web running at http://0.0.0.0:${PORT}`);
+  console.log(`  Local:   http://localhost:${PORT}`);
+  console.log(`  Network: http://192.168.1.62:${PORT}`);
   console.log(`Sessions: ${store.list().length} loaded from disk`);
 });

@@ -687,6 +687,76 @@ html, body {
 }
 
 /* ============================================================
+   SLASH COMMAND AUTOCOMPLETE
+   ============================================================ */
+
+.cw-cmd-autocomplete {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    right: 0;
+    background: var(--cb-bg-card);
+    border: 1px solid var(--cb-border);
+    border-radius: var(--cb-radius-sm);
+    margin-bottom: 4px;
+    max-height: 240px;
+    overflow-y: auto;
+    z-index: 20;
+    display: none;
+}
+
+.cw-cmd-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background var(--cb-transition);
+}
+
+.cw-cmd-item:hover,
+.cw-cmd-item.selected {
+    background: var(--cb-bg-card-hover);
+}
+
+.cw-cmd-name {
+    color: var(--cb-accent);
+    font-weight: 600;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.cw-cmd-desc {
+    color: var(--cb-text-secondary);
+    font-size: 0.78rem;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cw-cmd-source {
+    flex-shrink: 0;
+}
+
+.cw-cmd-banner {
+    padding: 6px var(--cb-space-md);
+    font-size: 0.78rem;
+    border-left: 3px solid var(--cb-accent);
+    margin: 4px 0;
+}
+
+.cw-cmd-banner-slash {
+    color: var(--cb-accent);
+    font-weight: 600;
+}
+
+/* Make input row position:relative for autocomplete positioning */
+.cw-input-row {
+    position: relative;
+}
+
+/* ============================================================
    RESPONSIVE
    ============================================================ */
 

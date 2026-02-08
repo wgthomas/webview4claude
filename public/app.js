@@ -22,6 +22,12 @@ const App = {
     /** @type {number|null} Thinking sayings rotation timer */
     _thinkTimer: null,
 
+    /** @type {object[]} Available slash commands */
+    _commands: [],
+
+    /** @type {number} Currently selected command in autocomplete */
+    _cmdSelection: -1,
+
     /** Thinking sayings — same vibe as the CLI */
     thinkingSayings: [
         'Thinking...', 'Pondering...', 'Contemplating...', 'Ruminating...',
@@ -90,6 +96,31 @@ const App = {
 
         // Keyboard shortcuts
         this.els.promptInput.addEventListener('keydown', (e) => {
+            const ac = document.getElementById('cmd-autocomplete');
+            if (ac && ac.style.display !== 'none') {
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    this._cmdSelection = Math.min(this._cmdSelection + 1, ac.children.length - 1);
+                    this._highlightCmd();
+                    return;
+                }
+                if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    this._cmdSelection = Math.max(this._cmdSelection - 1, 0);
+                    this._highlightCmd();
+                    return;
+                }
+                if ((e.key === 'Enter' || e.key === 'Tab') && this._cmdSelection >= 0) {
+                    e.preventDefault();
+                    const item = ac.children[this._cmdSelection];
+                    if (item) this._selectCmd(item.dataset.name);
+                    return;
+                }
+                if (e.key === 'Escape') {
+                    this._hideAutocomplete();
+                    return;
+                }
+            }
             if (e.key === 'Enter' && e.ctrlKey) {
                 e.preventDefault();
                 this.sendMessage();
@@ -99,11 +130,12 @@ const App = {
             }
         });
 
-        // Auto-resize textarea
+        // Auto-resize textarea + slash command detection
         this.els.promptInput.addEventListener('input', () => {
             const el = this.els.promptInput;
             el.style.height = 'auto';
             el.style.height = Math.min(el.scrollHeight, 200) + 'px';
+            this._checkSlashCommand();
         });
 
         // Modal listeners
@@ -150,6 +182,81 @@ const App = {
         // Store defaults for new session modal
         this._defaultCwd = cfg.defaultCwd || '';
         this._defaultModel = cfg.defaultModel || 'claude-sonnet-4-5-20250929';
+    },
+
+    // ─── Slash Commands ─────────────────────────────────────────────
+
+    async loadCommands(cwd) {
+        try {
+            const url = cwd ? `/api/commands?cwd=${encodeURIComponent(cwd)}` : '/api/commands';
+            const res = await fetch(url);
+            this._commands = await res.json();
+        } catch {
+            this._commands = [];
+        }
+    },
+
+    _checkSlashCommand() {
+        const val = this.els.promptInput.value;
+        // Only trigger if line starts with / and no spaces yet (still typing command name)
+        const match = val.match(/^\/([a-zA-Z0-9_-]*)$/);
+        if (!match) {
+            this._hideAutocomplete();
+            return;
+        }
+
+        const partial = match[1].toLowerCase();
+        const matches = this._commands.filter(c =>
+            c.name.toLowerCase().startsWith(partial)
+        );
+
+        if (matches.length === 0) {
+            this._hideAutocomplete();
+            return;
+        }
+
+        this._showAutocomplete(matches);
+    },
+
+    _showAutocomplete(matches) {
+        let ac = document.getElementById('cmd-autocomplete');
+        if (!ac) {
+            ac = document.createElement('div');
+            ac.id = 'cmd-autocomplete';
+            ac.className = 'cw-cmd-autocomplete';
+            this.els.promptInput.parentElement.appendChild(ac);
+        }
+
+        ac.style.display = 'block';
+        this._cmdSelection = 0;
+
+        ac.innerHTML = matches.map((cmd, i) =>
+            `<div class="cw-cmd-item ${i === 0 ? 'selected' : ''}" data-name="${CbUtils.escapeHtml(cmd.name)}" onclick="App._selectCmd('${CbUtils.escapeHtml(cmd.name)}')">
+                <span class="cw-cmd-name">/${CbUtils.escapeHtml(cmd.name)}</span>
+                <span class="cw-cmd-desc">${CbUtils.escapeHtml(cmd.description)}</span>
+                <span class="cw-cmd-source cb-tiny cb-dim">${cmd.source}</span>
+            </div>`
+        ).join('');
+    },
+
+    _hideAutocomplete() {
+        const ac = document.getElementById('cmd-autocomplete');
+        if (ac) ac.style.display = 'none';
+        this._cmdSelection = -1;
+    },
+
+    _highlightCmd() {
+        const ac = document.getElementById('cmd-autocomplete');
+        if (!ac) return;
+        Array.from(ac.children).forEach((el, i) => {
+            el.classList.toggle('selected', i === this._cmdSelection);
+        });
+    },
+
+    _selectCmd(name) {
+        this.els.promptInput.value = `/${name} `;
+        this.els.promptInput.focus();
+        this._hideAutocomplete();
     },
 
     // ─── Sessions ─────────────────────────────────────────────────
@@ -237,8 +344,9 @@ const App = {
 
             this.scrollToBottom();
 
-            // Connect SSE
+            // Connect SSE + load slash commands for this session's cwd
             this.connectSSE(id);
+            this.loadCommands(session.cwd);
 
             // Update running state UI
             this.setRunningState(session.status === 'running');
@@ -369,6 +477,11 @@ const App = {
         es.addEventListener('result', (e) => {
             const data = JSON.parse(e.data);
             this.handleResult(data);
+        });
+
+        es.addEventListener('command_expanded', (e) => {
+            const data = JSON.parse(e.data);
+            this.appendCommandBanner(data.command, data.description);
         });
 
         es.addEventListener('error', (e) => {
@@ -630,6 +743,14 @@ const App = {
 
         div.innerHTML = html;
         this.els.messages.appendChild(div);
+    },
+
+    appendCommandBanner(command, description) {
+        const div = document.createElement('div');
+        div.className = 'cw-cmd-banner';
+        div.innerHTML = `<span class="cw-cmd-banner-slash">/${CbUtils.escapeHtml(command)}</span> <span class="cb-dim">${CbUtils.escapeHtml(description)}</span>`;
+        this.els.messages.appendChild(div);
+        this.scrollToBottom();
     },
 
     appendSystemMessage(text) {
