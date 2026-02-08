@@ -316,11 +316,12 @@ html, body {
 .cw-msg-content em { color: var(--cb-text-secondary); }
 
 .cw-msg-content code {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(74, 158, 255, 0.1);
+    border: 1px solid rgba(74, 158, 255, 0.15);
     padding: 2px 6px;
     border-radius: 4px;
     font-size: 0.83rem;
-    color: var(--cb-accent);
+    color: #7cc4ff;
 }
 
 .cw-msg-content pre {
@@ -332,11 +333,11 @@ html, body {
 .cw-msg-content pre code {
     display: block;
     padding: 14px;
-    background: var(--cb-bg-page);
-    border: 1px solid var(--cb-border);
+    background: #0d0d1a;
+    border: 1px solid #252540;
     border-radius: var(--cb-radius-sm);
     overflow-x: auto;
-    color: var(--cb-text);
+    color: #d4d4d8;
     font-size: 0.82rem;
     line-height: 1.5;
 }
@@ -375,12 +376,12 @@ html, body {
     align-items: center;
     justify-content: space-between;
     padding: 6px 14px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid var(--cb-border);
+    background: #13132a;
+    border: 1px solid #252540;
     border-bottom: none;
     border-radius: var(--cb-radius-sm) var(--cb-radius-sm) 0 0;
     font-size: 0.72rem;
-    color: var(--cb-text-muted);
+    color: var(--cb-text-secondary);
 }
 
 .cw-code-header + pre code {
@@ -491,14 +492,14 @@ html, body {
 .cw-tool-section pre {
     margin: 0;
     padding: 8px;
-    background: var(--cb-bg-card);
-    border: 1px solid var(--cb-border);
+    background: #0d0d1a;
+    border: 1px solid #252540;
     border-radius: 4px;
     font-size: 0.78rem;
     overflow-x: auto;
     max-height: 300px;
     overflow-y: auto;
-    color: var(--cb-text-secondary);
+    color: #c8c8d0;
     white-space: pre-wrap;
     word-wrap: break-word;
 }
