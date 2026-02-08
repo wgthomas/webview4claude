@@ -330,17 +330,46 @@ html, body {
     overflow: hidden;
 }
 
-.cw-msg-content pre code {
+.cw-msg-content pre code,
+.cw-msg-content pre code.hljs,
+.cw-msg-content pre code[class*="language-"] {
     display: block;
-    padding: 14px;
-    background: #0d0d1a;
+    padding: 14px !important;
+    background: #0d0d1a !important;
     border: 1px solid #252540;
     border-radius: var(--cb-radius-sm);
     overflow-x: auto;
-    color: #d4d4d8;
+    color: #d4d4d8 !important;
     font-size: 0.82rem;
     line-height: 1.5;
 }
+
+/* Force ALL text inside code blocks to be visible — catches bare text,
+   hljs spans, and anything else that might inherit invisible colors */
+.cw-msg-content pre code *,
+.cw-msg-content pre code span {
+    color: inherit !important;
+}
+
+/* Then re-apply syntax colors for specific hljs tokens */
+.cw-msg-content pre code .hljs-keyword,
+.cw-msg-content pre code .hljs-selector-tag { color: #c792ea !important; }
+.cw-msg-content pre code .hljs-string,
+.cw-msg-content pre code .hljs-addition { color: #c3e88d !important; }
+.cw-msg-content pre code .hljs-number { color: #f78c6c !important; }
+.cw-msg-content pre code .hljs-comment { color: #676e95 !important; }
+.cw-msg-content pre code .hljs-function,
+.cw-msg-content pre code .hljs-title,
+.cw-msg-content pre code .hljs-property { color: #82aaff !important; }
+.cw-msg-content pre code .hljs-built_in,
+.cw-msg-content pre code .hljs-attr,
+.cw-msg-content pre code .hljs-type,
+.cw-msg-content pre code .hljs-selector-class { color: #ffcb6b !important; }
+.cw-msg-content pre code .hljs-variable,
+.cw-msg-content pre code .hljs-deletion,
+.cw-msg-content pre code .hljs-literal { color: #f07178 !important; }
+.cw-msg-content pre code .hljs-meta,
+.cw-msg-content pre code .hljs-regexp { color: #89ddff !important; }
 
 .cw-msg-content blockquote {
     border-left: 3px solid var(--cb-accent);

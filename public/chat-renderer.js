@@ -10,15 +10,7 @@ const ChatRenderer = {
     init() {
         marked.setOptions({
             breaks: true,
-            gfm: true,
-            highlight: (code, lang) => {
-                if (lang && hljs.getLanguage(lang)) {
-                    try {
-                        return hljs.highlight(code, { language: lang }).value;
-                    } catch {}
-                }
-                return hljs.highlightAuto(code).value;
-            }
+            gfm: true
         });
     },
 
@@ -34,14 +26,25 @@ const ChatRenderer = {
         const renderer = new marked.Renderer();
         const origCode = renderer.code.bind(renderer);
 
-        renderer.code = function({ text: code, lang }) {
+        renderer.code = function(tokenOrCode, infostring) {
+            // Handle both marked v12 object API and legacy positional args
+            let code, lang;
+            if (typeof tokenOrCode === 'object' && tokenOrCode !== null) {
+                code = tokenOrCode.text;
+                lang = tokenOrCode.lang;
+            } else {
+                code = tokenOrCode;
+                lang = infostring;
+            }
             const language = lang || 'plaintext';
             let highlighted;
             try {
+                // Only use hljs for known languages — never highlightAuto
+                // highlightAuto wraps text in invisible spans for plaintext
                 if (lang && hljs.getLanguage(lang)) {
                     highlighted = hljs.highlight(code, { language: lang }).value;
                 } else {
-                    highlighted = hljs.highlightAuto(code).value;
+                    highlighted = CbUtils.escapeHtml(code);
                 }
             } catch {
                 highlighted = CbUtils.escapeHtml(code);
@@ -52,7 +55,7 @@ const ChatRenderer = {
                 <span>${CbUtils.escapeHtml(language)}</span>
                 <button class="cw-code-copy" onclick="ChatRenderer.copyCode(this)" data-code="${escapedCode.replace(/"/g, '&quot;')}">Copy</button>
             </div>
-            <pre><code class="hljs language-${CbUtils.escapeHtml(language)}">${highlighted}</code></pre>`;
+            <pre><code style="display:block;padding:14px;background:#0d0d1a;color:#d4d4d8;border:1px solid #252540;border-radius:6px;overflow-x:auto;font-size:0.82rem;line-height:1.5;border-top-left-radius:0;border-top-right-radius:0;">${highlighted}</code></pre>`;
         };
 
         return marked.parse(text, { renderer });
