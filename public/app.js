@@ -91,7 +91,12 @@ const App = {
         this.els.btnStop.addEventListener('click', () => this.stopMessage());
         this.els.btnNewSession.addEventListener('click', () => this.showModal());
         this.els.btnToggleSidebar.addEventListener('click', () => {
-            document.getElementById('sidebar').classList.toggle('open');
+            this.toggleSidebar();
+        });
+
+        // Backdrop click closes sidebar on mobile
+        document.getElementById('sidebar-backdrop').addEventListener('click', () => {
+            this.closeSidebar();
         });
 
         // Keyboard shortcuts
@@ -259,6 +264,20 @@ const App = {
         this._hideAutocomplete();
     },
 
+    // ─── Sidebar ────────────────────────────────────────────────────
+
+    toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const backdrop = document.getElementById('sidebar-backdrop');
+        sidebar.classList.toggle('open');
+        backdrop.classList.toggle('active', sidebar.classList.contains('open'));
+    },
+
+    closeSidebar() {
+        document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('sidebar-backdrop').classList.remove('active');
+    },
+
     // ─── Sessions ─────────────────────────────────────────────────
 
     async loadSessions() {
@@ -300,6 +319,9 @@ const App = {
     },
 
     async selectSession(id) {
+        // Close sidebar on mobile
+        this.closeSidebar();
+
         // Disconnect from old session
         this.disconnectSSE();
 

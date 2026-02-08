@@ -15,6 +15,7 @@ html, body {
 .cw-layout {
     display: flex;
     height: 100vh;
+    height: 100dvh;
     overflow: hidden;
 }
 
@@ -790,6 +791,11 @@ html, body {
    RESPONSIVE
    ============================================================ */
 
+/* Sidebar backdrop — only visible on mobile when sidebar is open */
+.cw-sidebar-backdrop {
+    display: none;
+}
+
 @media (max-width: 768px) {
     .cw-sidebar {
         position: fixed;
@@ -804,6 +810,18 @@ html, body {
         left: 0;
     }
 
+    .cw-sidebar-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 49;
+    }
+
+    .cw-sidebar-backdrop.active {
+        display: block;
+    }
+
     .cw-sidebar-toggle {
         display: block;
     }
@@ -816,11 +834,19 @@ html, body {
         padding: var(--cb-space-sm);
     }
 
+    .cw-prompt-input {
+        font-size: 16px; /* prevents iOS zoom on focus */
+    }
+
     .cw-header-right {
         gap: var(--cb-space-sm);
     }
 
     .cw-cwd {
         display: none;
+    }
+
+    .cw-model-select {
+        max-width: 100px;
     }
 }
